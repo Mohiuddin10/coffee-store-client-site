@@ -1,19 +1,43 @@
 import { useContext } from "react";
 import { AuthContext } from "../providers/AuthProvider";
+import Swal from "sweetalert2";
 
 const SignUp = () => {
 
-    const {createUser} = useContext(AuthContext)
+    const { createUser} = useContext(AuthContext);
 
-    const handleSignup = e => {
+
+    const handleSignUp = e => {
         e.preventDefault();
         const form = e.target;
         const email = form.email.value;
         const password = form.password.value;
         console.log(email, password);
+
+
         createUser(email, password)
         .then(result => {
             console.log(result.user);
+            const createdAt = result.user.metadata.creationTime;
+            const user = {email, userCreatedTime: createdAt };
+
+            fetch('http://localhost:5000/user', {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify(user)
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+                if (data.insertedId) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "user added to DB",
+                      });
+                }
+            })
         })
         .catch(error => {
             console.log(error);
@@ -27,7 +51,7 @@ const SignUp = () => {
                     <h1 className="text-5xl font-bold">Signup now!</h1>
                 </div>
                 <div className="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
-                    <form onSubmit={handleSignup} className="card-body">
+                    <form onSubmit={handleSignUp} className="card-body">
                         <div className="form-control">
                             <label className="label">
                                 <span className="label-text">Email</span>
